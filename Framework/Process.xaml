@@ -53,6 +53,8 @@
       <x:String>UiPath.Web.Activities</x:String>
       <x:String>System.Reflection</x:String>
       <x:String>System.Numerics</x:String>
+      <x:String>Newtonsoft.Json</x:String>
+      <x:String>Newtonsoft.Json.Linq</x:String>
     </scg:List>
   </TextExpression.NamespacesForImplementation>
   <TextExpression.ReferencesForImplementation>
@@ -120,12 +122,14 @@
       <AssemblyReference>System.Reflection.Metadata</AssemblyReference>
       <AssemblyReference>System.Reflection.MetadataLoadContext</AssemblyReference>
       <AssemblyReference>System.Runtime.Numerics</AssemblyReference>
+      <AssemblyReference>Newtonsoft.Json</AssemblyReference>
     </scg:List>
   </TextExpression.ReferencesForImplementation>
-  <Sequence sap2010:Annotation.AnnotationText="Invoke major steps of the business process, which are usually implemented by multiple subworkflows.&#xA;&#xA;If a BusinessRuleException is thrown, the transaction is skipped. &#xA;If another kind of exception occurs, the current transaction can be retried. " DisplayName="Process" sap:VirtualizedContainerService.HintSize="1277,1301" sap2010:WorkflowViewState.IdRef="Sequence_1">
+  <Sequence sap2010:Annotation.AnnotationText="Invoke major steps of the business process, which are usually implemented by multiple subworkflows.&#xA;&#xA;If a BusinessRuleException is thrown, the transaction is skipped. &#xA;If another kind of exception occurs, the current transaction can be retried. " DisplayName="Process" sap:VirtualizedContainerService.HintSize="1277,1586.5" sap2010:WorkflowViewState.IdRef="Sequence_1">
     <Sequence.Variables>
       <Variable x:TypeArguments="x:Int32" Name="apiStatusCode" />
       <Variable x:TypeArguments="x:String" Name="apiResponse" />
+      <Variable x:TypeArguments="x:String" Name="htmlString" />
     </Sequence.Variables>
     <sap:WorkflowViewStateService.ViewState>
       <scg:Dictionary x:TypeArguments="x:String, x:Object">
@@ -180,6 +184,17 @@
         </Sequence>
       </If.Else>
     </If>
+    <ui:Comment sap:VirtualizedContainerService.HintSize="450,88.5" sap2010:WorkflowViewState.IdRef="Comment_4" Text="// Format Email Text" />
+    <ui:InvokeCode ContinueOnError="{x:Null}" Code="Dim jsonObject As JObject = JObject.Parse(in_jsonString)&#xD;&#xA;&#xD;&#xA;' Zugriff auf die tägliche Datenstruktur&#xD;&#xA;Dim dailyData As JToken = jsonObject(&quot;daily&quot;)&#xD;&#xA;&#xD;&#xA;&#xD;&#xA;out_htmlString = &quot;&lt;table border='1'&gt;&lt;tr&gt;&lt;th&gt;Date&lt;/th&gt;&lt;th&gt;Min Temp (°C)&lt;/th&gt;&lt;th&gt;Max Temp (°C)&lt;/th&gt;&lt;th&gt;Precipitation (%)&lt;/th&gt;&lt;th&gt;Max Wind (km/h)&lt;/th&gt;&lt;/tr&gt;&quot;&#xD;&#xA;&#xD;&#xA;For i As Integer = 0 To dailyData(&quot;time&quot;).Count - 1&#xD;&#xA;    out_htmlString &amp;= &quot;&lt;tr&gt;&quot;&#xD;&#xA;    out_htmlString &amp;= &quot;&lt;td&gt;&quot; &amp; dailyData(&quot;time&quot;)(i).ToString() &amp; &quot;&lt;/td&gt;&quot;&#xD;&#xA;    out_htmlString &amp;= &quot;&lt;td&gt;&quot; &amp; dailyData(&quot;temperature_2m_min&quot;)(i).ToString() &amp; &quot;&lt;/td&gt;&quot;&#xD;&#xA;    out_htmlString &amp;= &quot;&lt;td&gt;&quot; &amp; dailyData(&quot;temperature_2m_max&quot;)(i).ToString() &amp; &quot;&lt;/td&gt;&quot;&#xD;&#xA;    out_htmlString &amp;= &quot;&lt;td&gt;&quot; &amp; dailyData(&quot;precipitation_probability_mean&quot;)(i).ToString() &amp; &quot;&lt;/td&gt;&quot;&#xD;&#xA;    out_htmlString &amp;= &quot;&lt;td&gt;&quot; &amp; dailyData(&quot;windspeed_10m_max&quot;)(i).ToString() &amp; &quot;&lt;/td&gt;&quot;&#xD;&#xA;    out_htmlString &amp;= &quot;&lt;/tr&gt;&quot;&#xD;&#xA;Next i&#xD;&#xA;&#xD;&#xA;out_htmlString &amp;= &quot;&lt;/table&gt;&quot;&#xD;&#xA;&#xD;&#xA;" DisplayName="Invoke Code" sap:VirtualizedContainerService.HintSize="450,197" sap2010:WorkflowViewState.IdRef="InvokeCode_1">
+      <ui:InvokeCode.Arguments>
+        <InArgument x:TypeArguments="x:String" x:Key="in_jsonString">
+          <VisualBasicValue x:TypeArguments="x:String" ExpressionText="apiResponse" />
+        </InArgument>
+        <OutArgument x:TypeArguments="x:String" x:Key="out_htmlString">
+          <VisualBasicReference x:TypeArguments="x:String" ExpressionText="htmlString" />
+        </OutArgument>
+      </ui:InvokeCode.Arguments>
+    </ui:InvokeCode>
     <ui:Comment sap:VirtualizedContainerService.HintSize="450,88.5" sap2010:WorkflowViewState.IdRef="Comment_2" Text="// Send Email" />
     <ui:SendOutlookMail Account="{x:Null}" Bcc="{x:Null}" Body="{x:Null}" Cc="{x:Null}" ContinueOnError="{x:Null}" MailMessage="{x:Null}" ReplyTo="{x:Null}" TimeoutMS="{x:Null}" DisplayName="Send Outlook Mail Message" sap:VirtualizedContainerService.HintSize="450,176" sap2010:WorkflowViewState.IdRef="SendOutlookMail_1" Importance="Normal" IsBodyHtml="False" IsDraft="False" Sensitivity="Normal" Subject="Your Weather forecast for the next 14 days" To="[in_Config(&quot;String&quot;).ToString]">
       <ui:SendOutlookMail.Files>
